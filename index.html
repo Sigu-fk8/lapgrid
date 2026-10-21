@@ -349,8 +349,6 @@ async function saveLapToSupabase(entry){
   visibility: 'public',
   moderation_status: 'pending'
 });
-
-
   if(error){
     console.error('Supabase保存エラー:', error);
     showToast('クラウド保存に失敗しました');
