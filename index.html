@@ -10,7 +10,22 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body><div class="app">
+<body>
+<div id="auth-panel" style="max-width:420px;margin:24px auto;padding:20px;background:#151a22;border:1px solid #303744;border-radius:12px;color:#fff;font-family:Arial,sans-serif">
+  <h2 style="margin-top:0">LAPGRID アカウント</h2>
+  <p id="auth-status">ログインまたは新規登録してください。</p>
+  <label for="auth-email">メールアドレス</label>
+  <input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" style="display:block;box-sizing:border-box;width:100%;padding:12px;margin:6px 0 14px;background:#0d1015;color:#fff;border:1px solid #444;border-radius:8px">
+  <label for="auth-password">パスワード</label>
+  <input id="auth-password" type="password" autocomplete="current-password" placeholder="6文字以上" style="display:block;box-sizing:border-box;width:100%;padding:12px;margin:6px 0 14px;background:#0d1015;color:#fff;border:1px solid #444;border-radius:8px">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button id="auth-signup" type="button">新規登録</button>
+    <button id="auth-login" type="button">ログイン</button>
+    <button id="auth-logout" type="button" hidden>ログアウト</button>
+  </div>
+  <p id="auth-message" role="status" aria-live="polite"></p>
+</div>
+<div class="app">
 <header class="topbar"><div class="brand"><div class="brandmark">L</div><div>LAPGRID<small>CIRCUIT PERFORMANCE</small></div></div><div class="topright"><span class="live">● PROTOTYPE MODE</span><button class="btn small" onclick="navigate('submit')">＋ 投稿する</button><div class="avatar">DR</div></div></header>
 <div class="layout"><aside><div class="navlabel">WORKSPACE</div><button class="nav active" data-view="dashboard" onclick="navigate('dashboard')"><span class="ico">▦</span>ダッシュボード</button><button class="nav" data-view="ranking" onclick="navigate('ranking')"><span class="ico">♜</span>ランキング</button><button class="nav" data-view="submit" onclick="navigate('submit')"><span class="ico">＋</span>タイムを投稿</button><button class="nav" data-view="records" onclick="navigate('records')"><span class="ico">◷</span>走行記録</button><div class="navlabel" style="margin-top:24px">GARAGE</div><button class="nav" data-view="garage" onclick="navigate('garage')"><span class="ico">▰</span>マイガレージ</button><div class="aside-card"><div style="font-size:20px;margin-bottom:8px">◈</div><b>速さを、データに。</b><p>ラップタイムと走行条件を記録して、次のベストにつなげよう。</p><button class="btn small" style="width:100%" onclick="navigate('submit')">走行データを記録 →</button></div></aside>
 <main class="main">
@@ -68,4 +83,98 @@ supabaseClient.from('circuits')
       alert('Supabase接続成功！サーキット取得件数: ' + data.length);
     }
   });
+// LAPGRID authentication
+const authEmail = document.getElementById('auth-email');
+const authPassword = document.getElementById('auth-password');
+const authStatus = document.getElementById('auth-status');
+const authMessage = document.getElementById('auth-message');
+const authSignup = document.getElementById('auth-signup');
+const authLogin = document.getElementById('auth-login');
+const authLogout = document.getElementById('auth-logout');
+
+function showAuthMessage(message) {
+  authMessage.textContent = message;
+}
+
+function updateAuthUI(session) {
+  const loggedIn = !!session?.user;
+
+  authStatus.textContent = loggedIn
+    ? 'ログイン中：' + session.user.email
+    : 'ログインまたは新規登録してください。';
+
+  authSignup.hidden = loggedIn;
+  authLogin.hidden = loggedIn;
+  authLogout.hidden = !loggedIn;
+
+  authEmail.disabled = loggedIn;
+  authPassword.disabled = loggedIn;
+}
+
+authSignup.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+
+  if (!email || password.length < 6) {
+    showAuthMessage('メールアドレスと6文字以上のパスワードを入力してください。');
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password
+  });
+
+  showAuthMessage(error
+    ? '登録エラー：' + error.message
+    : '登録リクエストを送信しました。確認メールが届いた場合は認証してください。');
+});
+
+authLogin.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+
+  if (!email || !password) {
+    showAuthMessage('メールアドレスとパスワードを入力してください。');
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    showAuthMessage('ログインエラー：' + error.message);
+    return;
+  }
+
+  updateAuthUI(data.session);
+  showAuthMessage('ログインしました！');
+});
+
+authLogout.addEventListener('click', async () => {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    showAuthMessage('ログアウトエラー：' + error.message);
+    return;
+  }
+
+  updateAuthUI(null);
+  showAuthMessage('ログアウトしました。');
+});
+
+supabaseClient.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    showAuthMessage('セッション確認エラー：' + error.message);
+    return;
+  }
+
+  updateAuthUI(data.session);
+});
+
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  updateAuthUI(session);
+});
 </script></body></html>
