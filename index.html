@@ -258,7 +258,7 @@ rearTireBrand:v('entry-rear-brand')==='その他'?v('entry-rear-brand-other'):v(
 rearTireType:v('entry-rear-type')==='その他'?v('entry-rear-type-other'):v('entry-rear-type'),
 rearTireModel:v('entry-rear-model')==='その他'?v('entry-rear-model-other'):v('entry-rear-model'),
 rearTireSize:v('entry-rear-size'),tireage:v('entry-tireage'),tirepressure:v('entry-pressure'),weather:v('entry-weather'),surface:v('entry-surface'),airtemp:v('entry-airtemp'),pressurehpa:v('entry-pressurehpa'),tracktemp:v('entry-tracktemp'),wind:v('entry-wind'),warmer:document.querySelector('input[name="warmer"]:checked').value,warmtemp:v('entry-warmtemp'),warmduration:v('entry-warmduration'),actualtemp:v('entry-actualtemp'),warmbrand:v('entry-warmbrand'),proof:v('entry-proof'),notes:v('entry-notes'),link:v('entry-link'),mine:true};
-const saved = await saveLapToSupabase(entry);
+const saved = await saveLapToSupabase(entry);alert('Supabase保存結果: ' + saved);
 if(!saved) return;
 userEntries.unshift(entry);
 localStorage.setItem('lapgrid-entries',JSON.stringify(userEntries));
