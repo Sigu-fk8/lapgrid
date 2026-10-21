@@ -156,7 +156,6 @@
   <label for="entry-rear-size">リア タイヤサイズ *</label>
   <input id="entry-rear-size" placeholder="例：265/35R18" required>
 </div>
-
 <div class="field">
   <label for="entry-tireage">タイヤ状態</label>
   <select id="entry-tireage">
@@ -266,7 +265,10 @@ renderDashboard();renderRecords();showToast('走行記録を保存しました')
 // LAPGRID Supabase connection
 const SUPABASE_URL = 'https://azlvuuaxxwgljfxatrtm.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_j32WqSmY1QxldjuAg7UPtg_RBN5HCc1';
-
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 async function getCurrentUser(){
   const { data, error } = await supabaseClient.auth.getUser();
 
