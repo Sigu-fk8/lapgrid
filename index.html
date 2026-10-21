@@ -67,9 +67,27 @@
     <option>その他</option>
   </select>
 </div>
+
 <div class="field">
   <label for="entry-front-model">フロント タイヤ銘柄 *</label>
-  <input id="entry-front-model" placeholder="例：ADVAN A052" required>
+  <select id="entry-front-model" required>
+    <option value="">選択してください</option>
+    <option>ADVAN A052</option>
+    <option>ADVAN A050 M</option>
+    <option>ADVAN A050 GS</option>
+    <option>ADVAN A050 A1</option>
+    <option>POTENZA RE-12D</option>
+    <option>050GS</option>
+    <option>RE-71RS</option>
+    <option>R50 M(t9β)</option>
+    <option>R50 S(t13α)</option>
+    <option>R50 SP(t3α)</option>
+    <option>その他</option>
+  </select>
+</div>
+<div class="field" id="front-model-other-field" hidden>
+  <label for="entry-front-model-other">銘柄名</label>
+  <input id="entry-front-model-other" placeholder="銘柄名を入力">
 </div>
 <div class="field">
   <label for="entry-front-size">フロント タイヤサイズ *</label>
@@ -104,9 +122,27 @@
     <option>その他</option>
   </select>
 </div>
+
 <div class="field">
   <label for="entry-rear-model">リア タイヤ銘柄 *</label>
-  <input id="entry-rear-model" placeholder="例：ADVAN A052" required>
+  <select id="entry-rear-model" required>
+    <option value="">選択してください</option>
+    <option>ADVAN A052</option>
+    <option>ADVAN A050 M</option>
+    <option>ADVAN A050 GS</option>
+    <option>ADVAN A050 A1</option>
+    <option>POTENZA RE-12D</option>
+    <option>050GS</option>
+    <option>RE-71RS</option>
+    <option>R50 M(t9β)</option>
+    <option>R50 S(t13α)</option>
+    <option>R50 SP(t3α)</option>
+    <option>その他</option>
+  </select>
+</div>
+<div class="field" id="rear-model-other-field" hidden>
+  <label for="entry-rear-model-other">銘柄名</label>
+  <input id="entry-rear-model-other" placeholder="銘柄名を入力">
 </div>
 <div class="field">
   <label for="entry-rear-size">リア タイヤサイズ *</label>
@@ -151,21 +187,40 @@ function setRankMode(mode,el){rankMode=mode;document.querySelectorAll('.subnav b
 function renderDashboard(){let arr=allEntries().filter(e=>e.circuit==='筑波 TC2000').sort((a,b)=>timeMs(a.time)-timeMs(b.time)).slice(0,4);document.getElementById('dashboard-ranking').innerHTML=arr.map((e,i)=>`<tr><td><span class="ranknum ${i===0?'gold':''}">${String(i+1).padStart(2,'0')}</span></td><td><div class="driver"><div class="carbadge">🏎</div><div><b>${esc(e.driver)}</b><span>${esc(e.car)}</span></div></div></td><td>${esc(e.circuit)}</td><td><span class="lap">${esc(timeDisplay(e.time))}</span></td><td>${esc(e.tire)}</td><td>${proofPill(e.proof)}</td></tr>`).join('');document.getElementById('recent-activity').innerHTML=allEntries().slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,4).map(e=>`<div class="activityitem"><div class="activitydot"></div><div><b>${esc(e.driver)} · ${esc(e.circuit)}</b><p>${esc(e.car)} · ${esc(e.time)} · ${esc(e.tire)} · ${esc(e.date||'日付未記録')}</p></div></div>`).join('');document.getElementById('stat-records').textContent=128+userEntries.length;document.getElementById('stat-mine').textContent=3+userEntries.length}
 function renderRecords(){let arr=allEntries().slice(),q=(document.getElementById('record-search')?.value||'').toLowerCase(),sort=document.getElementById('record-sort')?.value||'new';if(q)arr=arr.filter(e=>[e.driver,e.car,e.circuit,e.tire].join(' ').toLowerCase().includes(q));if(sort==='time')arr.sort((a,b)=>timeMs(a.time)-timeMs(b.time));else arr.sort((a,b)=>(b.date||'').localeCompare(a.date||''));document.getElementById('records-body').innerHTML=arr.map(e=>`<tr><td>${esc(e.date||'—')}</td><td>${esc(e.circuit)}</td><td><div class="driver"><div class="carbadge">🏎</div><div><b>${esc(e.driver)}</b><span>${esc(e.car)}</span></div></div></td><td><span class="lap">${esc(timeDisplay(e.time))}</span></td><td>${esc(e.tire)}<br><span style="font-size:10px;color:var(--muted)">${esc(e.size)}</span></td><td>${esc(e.weather||'—')} / ${esc(e.surface||'—')}</td><td>${esc(e.warmer||'未記録')}${e.warmer==='使用あり'&&e.warmtemp?`<br><span style="font-size:10px;color:var(--muted)">${esc(e.warmtemp)}°C · ${esc(e.warmduration||'—')}分</span>`:''}</td></tr>`).join('');document.getElementById('records-empty').style.display=arr.length?'none':'block'}
 function toggleWarmer(){const val=document.querySelector('input[name="warmer"]:checked')?.value;document.querySelectorAll('.warmerfield').forEach(el=>{el.style.opacity=val==='使用あり'?'1':'.35';el.querySelector('input').disabled=val!=='使用あり'})}
+
 function toggleTireOther(){
   ['front','rear'].forEach(pos=>{
-    const select=document.getElementById('entry-'+pos+'-brand');
-    const field=document.getElementById(pos+'-brand-other-field');
-    const input=document.getElementById('entry-'+pos+'-brand-other');
-    if(select&&field&&input){
-      field.hidden=select.value!=='その他';
-      input.required=select.value==='その他';
+    // メーカーの「その他」
+    const brandSelect=document.getElementById('entry-'+pos+'-brand');
+    const brandField=document.getElementById(pos+'-brand-other-field');
+    const brandInput=document.getElementById('entry-'+pos+'-brand-other');
+
+    if(brandSelect&&brandField&&brandInput){
+      brandField.hidden=brandSelect.value!=='その他';
+      brandInput.required=brandSelect.value==='その他';
+      brandInput.disabled=brandSelect.value!=='その他';
+    }
+
+    // 銘柄の「その他」
+    const modelSelect=document.getElementById('entry-'+pos+'-model');
+    const modelField=document.getElementById(pos+'-model-other-field');
+    const modelInput=document.getElementById('entry-'+pos+'-model-other');
+
+    if(modelSelect&&modelField&&modelInput){
+      modelField.hidden=modelSelect.value!=='その他';
+      modelInput.required=modelSelect.value==='その他';
+      modelInput.disabled=modelSelect.value!=='その他';
     }
   });
 }
 ['front','rear'].forEach(pos=>{
   document.getElementById('entry-'+pos+'-brand')
     ?.addEventListener('change',toggleTireOther);
+
+  document.getElementById('entry-'+pos+'-model')
+    ?.addEventListener('change',toggleTireOther);
 });
+toggleTireOther();
 toggleTireOther();
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
 function exportBackup(){const payload={app:'LAPGRID',version:1,exportedAt:new Date().toISOString(),entries:userEntries,garage:garage};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='lapgrid-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);showToast('バックアップを書き出しました')}
@@ -174,11 +229,11 @@ document.getElementById('entry-date').value=new Date().toISOString().slice(0,10)
 size:v('entry-front-size')+' / '+v('entry-rear-size'),
 frontTireBrand:v('entry-front-brand')==='その他'?v('entry-front-brand-other'):v('entry-front-brand'),
 frontTireType:v('entry-front-type'),
-frontTireModel:v('entry-front-model'),
+frontTireModel:v('entry-front-model')==='その他'?v('entry-front-model-other'):v('entry-front-model'),
 frontTireSize:v('entry-front-size'),
 rearTireBrand:v('entry-rear-brand')==='その他'?v('entry-rear-brand-other'):v('entry-rear-brand'),
 rearTireType:v('entry-rear-type'),
-rearTireModel:v('entry-rear-model'),
+rearTireModel:v('entry-rear-model')==='その他'?v('entry-rear-model-other'):v('entry-rear-model'),
 rearTireSize:v('entry-rear-size'),tireage:v('entry-tireage'),tirepressure:v('entry-pressure'),weather:v('entry-weather'),surface:v('entry-surface'),airtemp:v('entry-airtemp'),pressurehpa:v('entry-pressurehpa'),tracktemp:v('entry-tracktemp'),wind:v('entry-wind'),warmer:document.querySelector('input[name="warmer"]:checked').value,warmtemp:v('entry-warmtemp'),warmduration:v('entry-warmduration'),actualtemp:v('entry-actualtemp'),warmbrand:v('entry-warmbrand'),proof:v('entry-proof'),notes:v('entry-notes'),link:v('entry-link'),mine:true};userEntries.unshift(entry);localStorage.setItem('lapgrid-entries',JSON.stringify(userEntries));renderDashboard();renderRecords();showToast('走行記録を保存しました');navigate('records')});document.getElementById('garage-form').addEventListener('submit',e=>{e.preventDefault();const v=id=>document.getElementById(id).value;garage={car:v('garage-car'),power:v('garage-power'),weight:v('garage-weight'),drive:v('garage-drive'),class:v('garage-class'),setup:v('garage-setup')};localStorage.setItem('lapgrid-garage',JSON.stringify(garage));showToast('ガレージを保存しました')});function loadGarage(){if(!garage)return;const m={'garage-car':'car','garage-power':'power','garage-weight':'weight','garage-drive':'drive','garage-class':'class','garage-setup':'setup'};for(const [id,k] of Object.entries(m))document.getElementById(id).value=garage[k]||''}toggleWarmer();renderDashboard();filterRanking();renderRecords();
 // LAPGRID Supabase connection
 const SUPABASE_URL = 'https://azlvuuaxxwgljfxatrtm.supabase.co';
