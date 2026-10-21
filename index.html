@@ -297,26 +297,59 @@ async function saveLapToSupabase(entry){
 
   const { error } = await supabaseClient
     .from('lap_records')
-    .insert({
-      owner_id: user.id,
-      circuit_name: entry.circuit,
-      session_date: entry.date,
-      lap_time_ms: lapTimeMs,
-      driver_display_name: entry.driver,
-      vehicle_display_name: entry.car,
-      front_tire_brand: entry.frontTireBrand || null,
-      front_tire_type: entry.frontTireType || null,
-      front_tire_model: entry.frontTireModel || null,
-      front_tire_size: entry.frontTireSize || null,
-      rear_tire_brand: entry.rearTireBrand || null,
-      rear_tire_type: entry.rearTireType || null,
-      rear_tire_model: entry.rearTireModel || null,
-      rear_tire_size: entry.rearTireSize || null,
-      surface: entry.surface || 'unknown',
-      visibility: 'public',
-      proof: entry.proof || 'self_reported',
-      moderation_status: 'pending'
-    });
+.insert({
+  owner_id: user.id,
+  circuit_name: entry.circuit,
+  course_name: entry.circuit,
+  session_date: entry.date,
+  lap_time_ms: lapTimeMs,
+  driver_display_name: entry.driver,
+  vehicle_display_name: entry.car,
+  power_ps: entry.power ? Number(entry.power) : null,
+
+  tire_brand: [
+    entry.frontTireBrand,
+    entry.rearTireBrand
+  ].filter(Boolean).join(' / ') || '未設定',
+  tire_model: [
+    entry.frontTireModel,
+    entry.rearTireModel
+  ].filter(Boolean).join(' / ') || '未設定',
+  tire_size: [
+    entry.frontTireSize,
+    entry.rearTireSize
+  ].filter(Boolean).join(' / ') || '未設定',
+
+  front_tire_brand: entry.frontTireBrand || null,
+  front_tire_type: entry.frontTireType || null,
+  front_tire_model: entry.frontTireModel || null,
+  front_tire_size: entry.frontTireSize || null,
+  rear_tire_brand: entry.rearTireBrand || null,
+  rear_tire_type: entry.rearTireType || null,
+  rear_tire_model: entry.rearTireModel || null,
+  rear_tire_size: entry.rearTireSize || null,
+
+  weather: entry.weather || null,
+  surface: entry.surface || 'unknown',
+  warmer: entry.warmer === '使用あり',
+  warmer_brand: entry.warmbrand || null,
+  warmer_set_temp_c: entry.warmtemp ? Number(entry.warmtemp) : null,
+  warmer_duration_min: entry.warmduration ? Number(entry.warmduration) : null,
+  tire_temp_after_warming_c: entry.actualtemp ? Number(entry.actualtemp) : null,
+
+  tire_pressure_value: entry.tirepressure ? Number(entry.tirepressure) : null,
+  air_temp_c: entry.airtemp ? Number(entry.airtemp) : null,
+  track_temp_c: entry.tracktemp ? Number(entry.tracktemp) : null,
+  pressure_hpa: entry.pressurehpa ? Number(entry.pressurehpa) : null,
+  wind_direction: entry.wind || null,
+
+  proof: entry.proof || 'self_reported',
+  proof_url: entry.link || null,
+  notes: entry.notes || null,
+  visibility: 'public',
+  moderation_status: 'pending'
+});
+
 
   if(error){
     console.error('Supabase保存エラー:', error);
