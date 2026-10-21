@@ -58,4 +58,14 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
+supabaseClient.from('circuits')
+  .select('id')
+  .limit(1)
+  .then(({ data, error }) => {
+    if (error) {
+      console.error('LAPGRID接続確認:', error.message);
+    } else {
+      console.log('LAPGRID Supabase接続成功！', data);
+    }
+  });
 </script></body></html>
